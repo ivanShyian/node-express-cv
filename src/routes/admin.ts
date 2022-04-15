@@ -6,7 +6,10 @@ import {
   putContact,
   postWork,
   putWork,
-  deleteWork
+  deleteWork,
+  postProject,
+  putProject,
+  deleteProject
 } from "../controllers/admin";
 import isAuth from '../middlewares/is-auth'
 
@@ -22,6 +25,9 @@ router.delete('/contact/:contactId', deleteContact)
 router.post('/work', postWork)
 router.put('/work/:workId', putWork)
 router.delete('/work/:workId', deleteWork)
-// router.get('/admin', (req, res, next) => {})
+/** Projects **/
+router.post('/project', postProject)
+router.put('/project/projectId', putProject)
+router.delete('/project/:projectId', deleteProject)
 
 export default router

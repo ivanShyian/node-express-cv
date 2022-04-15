@@ -4,7 +4,7 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import mongoose from 'mongoose'
 // import multer from 'multer'
-// import bodyMiddleware from './middlewares/transform-body'
+import bodyMiddleware from './middlewares/transform-body'
 import errorMiddleware from './middlewares/error'
 import adminRoutes from './routes/admin'
 import cvRoutes from './routes/cv'
@@ -20,20 +20,13 @@ app.use(cors({
 	allowedHeaders: 'Authorization, Content-Type, Accept-Language'
 }))
 app.use(bodyParser.json())
-// app.use((req, res, next) => {
-// 	res.setHeader('Access-Control-Allow-Origin', '*')
-// 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-// 	res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-// 	if (req.method === 'OPTIONS') return res.sendStatus(200)
-// 	next()
-// })
 
-// @@TODO Temporary
 app.use((req: CustomRequest, res, next) => {
 	req.lang = req.headers['accept-language']?.split('-')[1] as string
 	next()
 })
 
+app.use(bodyMiddleware)
 app.use('/admin', adminRoutes)
 app.use(cvRoutes)
 app.use(errorMiddleware)
