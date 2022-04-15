@@ -1,18 +1,33 @@
 import {NextFunction, Response} from 'express'
 import {CustomRequest, CustomError} from '../ts-models'
-import mergeArrays from '../utils/mergeArrays'
+
+import {clearImage} from '../utils/helpers/imageHelper'
+import mergeArrays from '../utils/helpers/mergeArraysHelper'
+import bodyErrors from "../utils/helpers/validationResultHelper";
 
 import About from '../models/about'
 import Contact from '../models/contact'
 import Work from '../models/work'
 import Project from '../models/project'
-import project from "../models/project";
 
 /** About **/
 export const putAbout = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {title, text, imageUrl} = req.body
+    const {title, text} = req.body
+    let imageUrl = req.body.image
+
+    let error = bodyErrors(req)
+    if (error) throw error
+
+    if (req.file) imageUrl = req.file.path.replace('\\','/')
+    if (!imageUrl) {
+      error = new Error('No image provided')
+      error.statusCode = 422
+      throw error
+    }
+
     const about = await About.findOne()
+    if (imageUrl !== about.imageUrl) clearImage(about.imageUrl)
 
     if (title) about.title = title
     if (text) about.text = text
@@ -30,6 +45,10 @@ export const putAbout = async(req: CustomRequest, res: Response, next: NextFunct
 export const postContact = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {name, value} = req.body
+
+    const error = bodyErrors(req)
+    if (error) throw error
+
     const contact = new Contact({name, value})
     const savedContact = await contact.save()
     res.status(201).json({result: savedContact})
@@ -38,11 +57,14 @@ export const postContact = async(req: CustomRequest, res: Response, next: NextFu
     next(e)
   }
 }
-
 export const putContact = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {name, value} = req.body
     const contactId = req.params.contactId
+
+    let error = bodyErrors(req)
+    if (error) throw error
+
     const contact = await Contact.findOne({_id: contactId})
     if (contact) {
       if (name) contact.name = name
@@ -51,7 +73,7 @@ export const putContact = async(req: CustomRequest, res: Response, next: NextFun
       const savedContact = await contact.save()
       return res.status(201).json({result: savedContact})
     }
-    const error: CustomError = new Error('Contact wasn\'t found')
+    error = new Error('Contact wasn\'t found')
     error.statusCode = 404
     throw error
   } catch (e: any) {
@@ -59,7 +81,6 @@ export const putContact = async(req: CustomRequest, res: Response, next: NextFun
     next(e)
   }
 }
-
 export const deleteContact = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const contactId = req.params.contactId
@@ -80,6 +101,10 @@ export const deleteContact = async(req: CustomRequest, res: Response, next: Next
 export const postWork = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {title, subtitle, description, responsibilities, technologies} = req.body
+
+    const error = bodyErrors(req)
+    if (error) throw error
+
     const work = new Work({
       title,
       subtitle,
@@ -99,6 +124,10 @@ export const putWork = async(req: CustomRequest, res: Response, next: NextFuncti
   try {
     const {title, subtitle, description, responsibilities, technologies} = req.body
     const workId = req.params.workId
+
+    let error = bodyErrors(req)
+    if (error) throw error
+
     const work = await Work.findOne({_id: workId})
     if (work) {
       if (title) work.title = title
@@ -114,7 +143,7 @@ export const putWork = async(req: CustomRequest, res: Response, next: NextFuncti
       const savedWork = await work.save()
       return res.status(201).json({result: savedWork})
     }
-    const error: CustomError = new Error('Work wasn\'t found')
+    error = new Error('Work wasn\'t found')
     error.statusCode = 404
     throw error
   } catch (e: any) {
@@ -141,14 +170,25 @@ export const deleteWork = async(req: CustomRequest, res: Response, next: NextFun
 /** Projects **/
 export const postProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {title, subtitle, description, technologies, imageUrl} = req.body
+    const {title, subtitle, description, technologies} = req.body
+
+    const error = bodyErrors(req)
+    if (error) throw error
+
+    if (!req.file) {
+      const error: CustomError = new Error('No image provided')
+      error.statusCode = 422
+      throw error
+    }
+
     const project = new Project({
       title,
       subtitle,
       description,
-      imageUrl,
+      imageUrl: req.file.path.replace('\\' ,'/'),
       technologies: mergeArrays([], technologies, req.lang!)
     })
+
     const savedProject = await project.save()
     res.status(201).json({result: savedProject})
   } catch (e: any) {
@@ -158,9 +198,23 @@ export const postProject = async(req: CustomRequest, res: Response, next: NextFu
 }
 export const putProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {title, subtitle, description, technologies, imageUrl} = req.body
     const projectId = req.params.projectId
+    const {title, subtitle, description, technologies} = req.body
+    let imageUrl = req.body.image
+
+    let error = bodyErrors(req)
+    if (error) throw error
+
+    if (req.file) imageUrl = req.file.path.replace('\\' ,'/')
+    if (!imageUrl) {
+      error = new Error('No file picked')
+      error.statusCode = 422
+      throw error
+    }
+
     const project = await Project.findOne({_id: projectId})
+    if (imageUrl !== project.imageUrl) clearImage(project.imageUrl)
+
     if (project) {
       if (title) project.title = title
       if (subtitle) project.subtitle = subtitle
@@ -173,7 +227,7 @@ export const putProject = async(req: CustomRequest, res: Response, next: NextFun
       const savedProject = await project.save()
       return res.status(201).json({result: savedProject})
     }
-    const error: CustomError = new Error('Project wasn\'t found')
+    error = new Error('Project wasn\'t found')
     error.statusCode = 404
     throw error
   } catch (e: any) {

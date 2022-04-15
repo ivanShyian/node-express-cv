@@ -10,24 +10,30 @@ import {
   postProject,
   putProject,
   deleteProject
-} from "../controllers/admin";
-import isAuth from '../middlewares/is-auth'
+} from '../controllers/admin'
+
+import {
+  aboutValidation,
+  contactValidation,
+  projectValidation,
+  workValidation
+} from '../validators'
 
 const router = Router()
 
 /** About **/
-router.put('/about', putAbout)
+router.put('/about', aboutValidation(),putAbout)
 /** Contacts **/
-router.post('/contact', postContact)
-router.put('/contact/:contactId', putContact)
+router.post('/contact', contactValidation(), postContact)
+router.put('/contact/:contactId', contactValidation(), putContact)
 router.delete('/contact/:contactId', deleteContact)
 /** Work **/
-router.post('/work', postWork)
-router.put('/work/:workId', putWork)
+router.post('/work', workValidation(), postWork)
+router.put('/work/:workId', workValidation(), putWork)
 router.delete('/work/:workId', deleteWork)
 /** Projects **/
-router.post('/project', postProject)
-router.put('/project/projectId', putProject)
+router.post('/project', projectValidation(), postProject)
+router.put('/project/projectId', projectValidation(), putProject)
 router.delete('/project/:projectId', deleteProject)
 
 export default router

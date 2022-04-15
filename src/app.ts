@@ -1,14 +1,21 @@
+import path from 'path'
 import express from 'express'
 import dotenv from 'dotenv'
 import bodyParser from 'body-parser'
+import multer from 'multer'
 import cors from 'cors'
 import mongoose from 'mongoose'
-// import multer from 'multer'
+
+import helmet from 'helmet'
+import compression from 'compression'
+
+import authMiddleware from './middlewares/is-auth'
 import bodyMiddleware from './middlewares/transform-body'
 import errorMiddleware from './middlewares/error'
 import adminRoutes from './routes/admin'
 import cvRoutes from './routes/cv'
-import {CustomRequest} from "./ts-models";
+
+import {fileStorage, fileFilter} from "./config/multer";
 
 const app = express()
 dotenv.config()
@@ -19,15 +26,19 @@ app.use(cors({
 	methods: 'GET, POST, PUT, DELETE, OPTIONS',
 	allowedHeaders: 'Authorization, Content-Type, Accept-Language'
 }))
-app.use(bodyParser.json())
 
-app.use((req: CustomRequest, res, next) => {
-	req.lang = req.headers['accept-language']?.split('-')[1] as string
-	next()
-})
+app.use(helmet())
+app.use(compression())
+
+app.use(bodyParser.json())
+app.use(multer({
+	storage: fileStorage,
+	fileFilter
+}).single('image'))
+app.use('/images', express.static(path.join(__dirname, 'images')))
 
 app.use(bodyMiddleware)
-app.use('/admin', adminRoutes)
+app.use('/admin', authMiddleware, adminRoutes)
 app.use(cvRoutes)
 app.use(errorMiddleware)
 
