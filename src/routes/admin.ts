@@ -9,20 +9,26 @@ import {
   deleteWork,
   postProject,
   putProject,
-  deleteProject
+  deleteProject,
+  putConfig,
+  postConfig
 } from '../controllers/admin'
 
 import {
   aboutValidation,
   contactValidation,
   projectValidation,
-  workValidation
+  workValidation,
+  configValidation
 } from '../validators'
 
 const router = Router()
 
+/** Config **/
+router.post('/config', configValidation(), postConfig)
+router.put('/config', configValidation(), putConfig)
 /** About **/
-router.put('/about', aboutValidation(),putAbout)
+router.put('/about', aboutValidation(), putAbout)
 /** Contacts **/
 router.post('/contact', contactValidation(), postContact)
 router.put('/contact/:contactId', contactValidation(), putContact)

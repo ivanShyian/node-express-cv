@@ -9,24 +9,29 @@ const adminSchema = new Schema({
     type: String,
     required: true
   },
-  about: {
-    type: Schema.Types.ObjectId,
-    ref: 'About'
-  },
-  projects: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Project'
-  }],
-  work: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Work'
-  }],
-  contacts: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Contact'
-  }],
-  resetToken: String,
-  resetTokenExpiration: Date,
+  // role [admin, user]
+  role: {
+    type: String,
+    required: true
+  }
+  // about: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'About'
+  // },
+  // projects: [{
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'Project'
+  // }],
+  // work: [{
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'Work'
+  // }],
+  // contacts: [{
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'Contact'
+  // }],
+  // resetToken: String,
+  // resetTokenExpiration: Date,
 })
 
 export default model('Admin', adminSchema)

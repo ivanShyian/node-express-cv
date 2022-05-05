@@ -3,11 +3,14 @@ import {
   getAbout,
   getContacts,
   getProjects,
+  getConfig,
   getWork
 } from '../controllers/cv'
 
 const router = Router()
 
+/** Config **/
+router.get('/config', getConfig)
 /** About **/
 router.get('/about', getAbout)
 /** Contacts **/

@@ -9,6 +9,42 @@ import About from '../models/about'
 import Contact from '../models/contact'
 import Work from '../models/work'
 import Project from '../models/project'
+import Config from '../models/config'
+
+/** Config **/
+export const postConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const {links, emailReceiver} = req.body
+    const error = bodyErrors(req)
+    if (error) throw error
+
+    const config = new Config({links, emailReceiver})
+    const savedConfig = await config.save()
+
+    res.status(200).json({result: savedConfig})
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+
+export const putConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const {links, emailReceiver} = req.body
+    const error = bodyErrors(req)
+    if (error) throw error
+
+    const config = await Config.findOne()
+    if (links) config.links = links
+    if (emailReceiver) config.emailReceiver = emailReceiver
+    const savedConfig = await config.save()
+
+    res.status(200).json({result: savedConfig})
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
 
 /** About **/
 export const putAbout = async(req: CustomRequest, res: Response, next: NextFunction) => {

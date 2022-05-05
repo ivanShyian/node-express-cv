@@ -14,6 +14,7 @@ import bodyMiddleware from './middlewares/transform-body'
 import errorMiddleware from './middlewares/error'
 import adminRoutes from './routes/admin'
 import cvRoutes from './routes/cv'
+import loginRoutes from './routes/login'
 
 import {fileStorage, fileFilter} from "./config/multer";
 
@@ -40,6 +41,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')))
 app.use(bodyMiddleware)
 app.use('/admin', authMiddleware, adminRoutes)
 app.use(cvRoutes)
+app.use(loginRoutes)
 app.use(errorMiddleware)
 
 ;(async() => {
