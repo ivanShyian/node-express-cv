@@ -30,13 +30,31 @@ export const postConfig = async(req: CustomRequest, res: Response, next: NextFun
 
 export const putConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {links, emailReceiver} = req.body
-    const error = bodyErrors(req)
+    const {links, status, emailReceiver} = req.body
+    let imageUrl = req.body.avatar
+
+    let error = bodyErrors(req)
     if (error) throw error
 
+    if (req.file) {
+      imageUrl = req.file.path
+        .replace('src\\', '')
+        .replace('\\', '/')
+    }
+
+    if (!imageUrl) {
+      error = new Error('No avatar provided')
+      error.statusCode = 422
+      throw error
+    }
+
     const config = await Config.findOne()
-    if (links) config.links = links
+
+    if (links) config.links = JSON.parse(links)
+    if (status) config.status = JSON.parse(status)
     if (emailReceiver) config.emailReceiver = emailReceiver
+    if (imageUrl) config.avatar = imageUrl
+
     const savedConfig = await config.save()
 
     res.status(200).json({result: savedConfig})

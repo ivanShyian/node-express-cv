@@ -1,8 +1,9 @@
 import multer, {FileFilterCallback} from 'multer'
 import {Request} from 'express'
+import path from 'path'
 
 export const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'images'),
+  destination: (req, file, cb) => cb(null, './src/images/'),
   filename: (req, file, cb) => cb(null, `${new Date().getTime()}_${file.originalname}`)
 })
 

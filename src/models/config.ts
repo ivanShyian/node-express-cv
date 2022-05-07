@@ -13,12 +13,14 @@ const linkSchema = new Schema({
 
 const nestedSchemaWithId = new Schema({
   en: linkSchema,
-  uk: linkSchema
+  uk: linkSchema,
+  _id: String
 })
 
 const simpleNestedSchema = new Schema({
   en: String,
-  uk: String
+  uk: String,
+  _id: String
 })
 
 const configSchema = new Schema({

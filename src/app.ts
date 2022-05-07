@@ -30,15 +30,15 @@ app.use(cors({
 
 app.use(helmet())
 app.use(compression())
-
 app.use(bodyParser.json())
 app.use(multer({
 	storage: fileStorage,
 	fileFilter
 }).single('image'))
+
 app.use('/images', express.static(path.join(__dirname, 'images')))
 
-app.use(bodyMiddleware)
+// app.use(bodyMiddleware)
 app.use('/admin', authMiddleware, adminRoutes)
 app.use(cvRoutes)
 app.use(loginRoutes)

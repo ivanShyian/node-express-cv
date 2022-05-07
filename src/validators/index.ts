@@ -55,8 +55,9 @@ export const configValidation = () => {
   return [
     textValidator('emailReceiver'),
     arrayValidator('links'),
-    objectArrayValidator('links', 'name'),
-    objectArrayValidator('links', 'value'),
+    arrayValidator('status')
+    // objectArrayValidator('links', 'name'),
+    // objectArrayValidator('links', 'value'),
   ]
 }
 
