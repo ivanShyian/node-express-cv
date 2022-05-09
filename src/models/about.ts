@@ -1,23 +1,16 @@
 import {Schema, model} from "mongoose";
 
 const nestedSchema = new Schema({
-  en: {
-    type: String,
-    default: '[empty]'
-  },
-  uk: {
-    type: String,
-    default: '[empty]'
-  }
+  en: String,
+  uk: String
 }, {_id: false})
 
 const aboutSchema = new Schema({
-  title: nestedSchema,
   text: nestedSchema,
-  imageUrl: {
-    type: String,
-    required: false
-  }
+  techs: [{
+    name: String,
+    value: Number
+  }]
 })
 
 export default model('About', aboutSchema)

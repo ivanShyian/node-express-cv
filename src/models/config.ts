@@ -1,22 +1,5 @@
 import {model, Schema} from 'mongoose'
 
-const linkSchema = new Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  value: {
-    type: String,
-    required: true
-  }
-})
-
-const nestedSchemaWithId = new Schema({
-  en: linkSchema,
-  uk: linkSchema,
-  _id: String
-})
-
 const simpleNestedSchema = new Schema({
   en: String,
   uk: String,
@@ -24,12 +7,19 @@ const simpleNestedSchema = new Schema({
 })
 
 const configSchema = new Schema({
+  name: {
+    en: String,
+    uk: String
+  },
   avatar: {
     type: String,
     required: true
   },
   status: [simpleNestedSchema],
-  links: [nestedSchemaWithId],
+  links: {
+    type: Map,
+    of: String
+  },
   emailReceiver: {
     type: String,
     required: true

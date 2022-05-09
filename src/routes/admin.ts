@@ -11,7 +11,7 @@ import {
   putProject,
   deleteProject,
   putConfig,
-  postConfig
+  // postConfig
 } from '../controllers/admin'
 
 import {
@@ -25,7 +25,7 @@ import {
 const router = Router()
 
 /** Config **/
-router.post('/config', configValidation(), postConfig)
+// router.post('/config', configValidation(), postConfig)
 router.put('/config', configValidation(), putConfig)
 /** About **/
 router.put('/about', aboutValidation(), putAbout)

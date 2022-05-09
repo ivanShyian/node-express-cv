@@ -12,26 +12,26 @@ import Project from '../models/project'
 import Config from '../models/config'
 
 /** Config **/
-export const postConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
-  try {
-    const {links, emailReceiver} = req.body
-    const error = bodyErrors(req)
-    if (error) throw error
-
-    const config = new Config({links, emailReceiver})
-    const savedConfig = await config.save()
-
-    res.status(200).json({result: savedConfig})
-  } catch (e: any) {
-    if (!e.statusCode) e.statusCode = 500
-    next(e)
-  }
-}
+// export const postConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
+//   try {
+//     const {links, emailReceiver} = req.body
+//     const error = bodyErrors(req)
+//     if (error) throw error
+//
+//     const config = new Config({links, emailReceiver})
+//     const savedConfig = await config.save()
+//
+//     res.status(200).json({result: savedConfig})
+//   } catch (e: any) {
+//     if (!e.statusCode) e.statusCode = 500
+//     next(e)
+//   }
+// }
 
 export const putConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {links, status, emailReceiver} = req.body
-    let imageUrl = req.body.avatar
+    const {links, status, emailReceiver, name} = req.body
+    let imageUrl = req.body.image
 
     let error = bodyErrors(req)
     if (error) throw error
@@ -52,6 +52,7 @@ export const putConfig = async(req: CustomRequest, res: Response, next: NextFunc
 
     if (links) config.links = JSON.parse(links)
     if (status) config.status = JSON.parse(status)
+    if (name) config.name = JSON.parse(name)
     if (emailReceiver) config.emailReceiver = emailReceiver
     if (imageUrl) config.avatar = imageUrl
 
@@ -67,25 +68,15 @@ export const putConfig = async(req: CustomRequest, res: Response, next: NextFunc
 /** About **/
 export const putAbout = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {title, text} = req.body
-    let imageUrl = req.body.image
+    const {text, techs} = req.body
 
     let error = bodyErrors(req)
     if (error) throw error
 
-    if (req.file) imageUrl = req.file.path.replace('\\','/')
-    if (!imageUrl) {
-      error = new Error('No image provided')
-      error.statusCode = 422
-      throw error
-    }
-
     const about = await About.findOne()
-    if (imageUrl !== about.imageUrl) clearImage(about.imageUrl)
 
-    if (title) about.title = title
     if (text) about.text = text
-    if (imageUrl) about.imageUrl = imageUrl
+    if (techs) about.techs = techs
 
     const saved = await about.save()
     res.status(201).json({result: saved})

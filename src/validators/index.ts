@@ -20,8 +20,8 @@ const emailValidator = (field = '') => {
 
 export const aboutValidation = () => {
   return [
-    textValidator('title'),
     textValidator('text')
+    // @TODO Add techs validation
   ]
 }
 
@@ -54,8 +54,9 @@ export const projectValidation = () => {
 export const configValidation = () => {
   return [
     textValidator('emailReceiver'),
-    arrayValidator('links'),
-    arrayValidator('status')
+    // @TODO Add [links, status] validation
+    // arrayValidator('links'),
+    // arrayValidator('status')
     // objectArrayValidator('links', 'name'),
     // objectArrayValidator('links', 'value'),
   ]

@@ -1,6 +1,7 @@
 import {Router} from 'express'
 import {
   getAbout,
+  getEducation,
   getContacts,
   getProjects,
   getConfig,
@@ -13,6 +14,8 @@ const router = Router()
 router.get('/config', getConfig)
 /** About **/
 router.get('/about', getAbout)
+/** Education **/
+router.get('/education', getEducation)
 /** Contacts **/
 router.get('/contacts', getContacts)
 /** Projects **/
