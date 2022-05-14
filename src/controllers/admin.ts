@@ -10,24 +10,10 @@ import Contact from '../models/contact'
 import Work from '../models/work'
 import Project from '../models/project'
 import Config from '../models/config'
+import Education from '../models/education'
+import exp from 'constants'
 
 /** Config **/
-// export const postConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
-//   try {
-//     const {links, emailReceiver} = req.body
-//     const error = bodyErrors(req)
-//     if (error) throw error
-//
-//     const config = new Config({links, emailReceiver})
-//     const savedConfig = await config.save()
-//
-//     res.status(200).json({result: savedConfig})
-//   } catch (e: any) {
-//     if (!e.statusCode) e.statusCode = 500
-//     next(e)
-//   }
-// }
-
 export const putConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {links, status, emailReceiver, name} = req.body
@@ -80,6 +66,153 @@ export const putAbout = async(req: CustomRequest, res: Response, next: NextFunct
 
     const saved = await about.save()
     res.status(201).json({result: saved})
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+
+export const postEducationSchool = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const {data, type} = req.body
+
+    const education = await Education.findOne()
+    if (education) {
+      if (type === 'add') {
+        education.school = [
+          ...education.school,
+          {...data}
+        ]
+      } else if (type === 'edit') {
+        let schoolCopy = [...education.school]
+        const foundIndex = education.school.findIndex((s: any) => s._id.toString() === data._id.toString())
+        schoolCopy[foundIndex] = {...data}
+        education.school = schoolCopy
+      }
+      const savedEducation = await education.save()
+      res.status(200).json({result: savedEducation})
+    }
+    const error: CustomError = new Error('Education wasn\'t found')
+    error.statusCode = 404
+    throw error
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+
+export const deleteEducation = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const {id} = req.params
+    const education = await Education.findOne()
+    if (education) {
+      education.school = [...education.school.filter((el: any) => el._id.toString() !== id)]
+      const savedEducation = await education.save()
+      res.status(200).json({result: savedEducation})
+    }
+    const error: CustomError = new Error('Education wasn\'t found')
+    error.statusCode = 404
+    throw error
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+
+export const deleteTech = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const {id} = req.params
+    const education = await Education.findOne()
+    if (education) {
+      const arrayIdToRemove = id.split(';')
+      education.techs = [...education.techs.filter((el: any) => !arrayIdToRemove.includes(el._id.toString()))]
+      const savedEducation = await education.save()
+      res.status(200).json({result: savedEducation})
+    }
+    const error: CustomError = new Error('Education wasn\'t found')
+    error.statusCode = 404
+    throw error
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+
+
+export const postEducationTech = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const {techs} = req.body
+    const education = await Education.findOne()
+    if (education) {
+      education.techs = [...education.techs, ...techs]
+      const savedEducation = await education.save()
+      res.status(200).json({result: savedEducation})
+    }
+    const error: CustomError = new Error('Education wasn\'t found')
+    error.statusCode = 404
+    throw error
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+
+export const putEducationTech = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const {techs} = req.body
+    const education = await Education.findOne()
+    if (education) {
+      education.techs = education.techs.map((tech: any) => {
+        const foundIndex = techs.findIndex((userTech: any) => userTech._id === tech._id.toString())
+        if (foundIndex !== -1) {
+          return {
+            ...tech._doc,
+            courses: [
+              ...tech._doc.courses,
+              ...techs[foundIndex].courses
+            ]
+          }
+        }
+        return tech
+      })
+      const savedEducation = await education.save()
+      res.status(200).json({result: savedEducation})
+    }
+    const error: CustomError = new Error('Education wasn\'t found')
+    error.statusCode = 404
+    throw error
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+
+export const deleteCourses = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const {id} = req.params
+    const education = await Education.findOne()
+    if (education) {
+      let deleteMap: {[key: string]: string[]} = {}
+      id.split('&').forEach(el => {
+        const [techId, courseIds] = el.split('=')
+        deleteMap[techId] = courseIds.split(';')
+      })
+      education.techs = education.techs.map((tech: any) => {
+        if (Object.keys(deleteMap).includes(tech._id.toString())) {
+          const coursesToRemove = deleteMap[tech._id.toString()]
+          const coursesCopy = tech.courses.filter((fTech: any) => !coursesToRemove.includes(fTech._id.toString()))
+          return {
+            ...tech,
+            courses: coursesCopy
+          }
+        }
+        return tech
+      })
+      const savedEducation = await education.save()
+      res.status(200).json({result: savedEducation})
+    }
+    const error: CustomError = new Error('Education wasn\'t found')
+    error.statusCode = 404
   } catch (e: any) {
     if (!e.statusCode) e.statusCode = 500
     next(e)
