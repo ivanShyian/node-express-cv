@@ -1,33 +1,24 @@
 import {Schema, model} from "mongoose";
 
-const nestedSchema = new Schema({
-  en: {
-    type: String,
-    default: '[empty]'
-  },
-  ua: {
-    type: String,
-    default: '[empty]'
-  }
+const stringSchemaNoId = new Schema({
+  en: String,
+  ua: String
 }, {_id: false})
 
-const newSchemaWithId = new Schema({
-  en: {
-    type: String,
-    default: '[empty]'
-  },
-  ua: {
-    type: String,
-    default: '[empty]'
-  }
+const stringSchemaWithId = new Schema({
+  en: String,
+  uk: String
 })
 
 const workSchema = new Schema({
-  title: nestedSchema,
-  subtitle: nestedSchema,
-  description: nestedSchema,
-  responsibilities: [newSchemaWithId],
-  technologies: [newSchemaWithId]
+  title: String,
+  subtitle: stringSchemaNoId,
+  description: stringSchemaNoId,
+  responsibilities: [stringSchemaWithId],
+  position: String,
+  duration: String,
+  technologies: [String],
+  imageUrl: String
 })
 
 export default model('Work', workSchema)
