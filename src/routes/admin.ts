@@ -1,9 +1,6 @@
 import {Router} from 'express'
 import {
-  deleteContact,
-  postContact,
   putAbout,
-  putContact,
   postWork,
   putWork,
   deleteWork,
@@ -22,7 +19,6 @@ import {
 
 import {
   aboutValidation,
-  contactValidation,
   projectValidation,
   workValidation,
   configValidation
@@ -42,14 +38,9 @@ router.post('/education/school', postEducationSchool)
 router.delete('/education/school/:id', deleteEducation)
 router.delete('/education/techs/:id', deleteTech)
 router.delete('/education/courses/:id', deleteCourses)
-
-/** Contacts **/
-router.post('/contact', contactValidation(), postContact)
-router.put('/contact/:contactId', contactValidation(), putContact)
-router.delete('/contact/:contactId', deleteContact)
 /** Work **/
-router.post('/work', workValidation(), postWork)
-router.put('/work/:workId', workValidation(), putWork)
+router.post('/work', postWork)
+router.put('/work', putWork)
 router.delete('/work/:workId', deleteWork)
 /** Projects **/
 router.post('/project', projectValidation(), postProject)
