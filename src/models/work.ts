@@ -2,7 +2,7 @@ import {Schema, model} from "mongoose";
 
 const stringSchemaNoId = new Schema({
   en: String,
-  ua: String
+  uk: String
 }, {_id: false})
 
 const stringSchemaWithId = new Schema({

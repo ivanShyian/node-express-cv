@@ -14,7 +14,6 @@ import {
   deleteEducation,
   deleteTech,
   deleteCourses
-  // postConfig
 } from '../controllers/admin'
 
 import {
@@ -27,7 +26,6 @@ import {
 const router = Router()
 
 /** Config **/
-// router.post('/config', configValidation(), postConfig)
 router.put('/config', configValidation(), putConfig)
 /** About **/
 router.put('/about', aboutValidation(), putAbout)
@@ -43,7 +41,7 @@ router.post('/work', postWork)
 router.put('/work', putWork)
 router.delete('/work/:workId', deleteWork)
 /** Projects **/
-router.post('/project', projectValidation(), postProject)
+router.post('/project', postProject)
 router.put('/project/projectId', projectValidation(), putProject)
 router.delete('/project/:projectId', deleteProject)
 

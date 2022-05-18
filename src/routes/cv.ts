@@ -2,10 +2,10 @@ import {Router} from 'express'
 import {
   getAbout,
   getEducation,
-  getContacts,
   getProjects,
   getConfig,
-  getWork
+  getWorkList,
+  getProjectById
 } from '../controllers/cv'
 
 const router = Router()
@@ -16,11 +16,10 @@ router.get('/config', getConfig)
 router.get('/about', getAbout)
 /** Education **/
 router.get('/education', getEducation)
-/** Contacts **/
-router.get('/contacts', getContacts)
 /** Projects **/
 router.get('/projects', getProjects)
+router.get('/projects/:workId', getProjectById)
 /** Work **/
-router.get('/work', getWork)
+router.get('/work', getWorkList)
 
 export default router
