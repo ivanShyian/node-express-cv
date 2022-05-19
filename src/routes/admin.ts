@@ -42,7 +42,7 @@ router.put('/work', putWork)
 router.delete('/work/:workId', deleteWork)
 /** Projects **/
 router.post('/project', postProject)
-router.put('/project/projectId', projectValidation(), putProject)
+router.put('/project', putProject)
 router.delete('/project/:projectId', deleteProject)
 
 export default router

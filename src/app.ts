@@ -34,7 +34,7 @@ app.use(bodyParser.json())
 app.use(multer({
 	storage: fileStorage,
 	fileFilter
-}).single('image'))
+}).any())
 
 app.use('/images', express.static(path.join(__dirname, 'images')))
 

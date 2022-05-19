@@ -1,5 +1,6 @@
 import {NextFunction, Response} from 'express'
 import {CustomRequest, CustomError} from '../ts-models'
+import {Express} from 'express'
 
 import {clearImage} from '../utils/helpers/imageHelper'
 import mergeArrays from '../utils/helpers/mergeArraysHelper'
@@ -11,7 +12,6 @@ import Work from '../models/work'
 import Project from '../models/project'
 import Config from '../models/config'
 import Education from '../models/education'
-import exp from 'constants'
 
 /** Config **/
 export const putConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
@@ -22,10 +22,9 @@ export const putConfig = async(req: CustomRequest, res: Response, next: NextFunc
     let error = bodyErrors(req)
     if (error) throw error
 
-    if (req.file) {
-      imageUrl = req.file.path
-        .replace('src\\', '')
-        .replace('\\', '/')
+    if (req.files?.length) {
+      const filePath = (req.files as Express.Multer.File[])[0].path
+      imageUrl = filePath.replace('src\\', '').replace('\\', '/')
     }
 
     if (!imageUrl) {
@@ -35,6 +34,9 @@ export const putConfig = async(req: CustomRequest, res: Response, next: NextFunc
     }
 
     const config = await Config.findOne()
+    if (imageUrl !== config.avatar) {
+      clearImage(config.avatar)
+    }
 
     if (links) config.links = JSON.parse(links)
     if (status) config.status = JSON.parse(status)
@@ -228,9 +230,8 @@ export const postWork = async(req: CustomRequest, res: Response, next: NextFunct
     if (error) throw error
 
     let imageUrl = req.body.imageUrl
-    if (req.file) {
-      console.log(req.file)
-      imageUrl = req.file.path
+    if (req.files?.length) {
+      imageUrl = (req.files as Express.Multer.File[])[0].path
         .replace('src\\', '')
         .replace('\\', '/')
     }
@@ -268,11 +269,10 @@ export const putWork = async(req: CustomRequest, res: Response, next: NextFuncti
 
     const work = await Work.findOne({_id})
 
-    if (!imageUrl) {
-      imageUrl = work.imageUrl
-    }
-    if (req.file) {
-      imageUrl = req.file.path
+    if (!imageUrl) imageUrl = work.imageUrl
+
+    if (req.files?.length) {
+      imageUrl = (req.files as Express.Multer.File[])[0].path
         .replace('src\\', '')
         .replace('\\', '/')
     }
@@ -291,6 +291,7 @@ export const putWork = async(req: CustomRequest, res: Response, next: NextFuncti
       if (technologies) work.technologies = JSON.parse(technologies)
       if (position) work.position = position
       if (duration) work.duration = duration
+      if (imageUrl) work.imageUrl = imageUrl
 
       const savedWork = await work.save()
       return res.status(201).json({result: savedWork})
@@ -322,23 +323,29 @@ export const deleteWork = async(req: CustomRequest, res: Response, next: NextFun
 /** Projects **/
 export const postProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {title, subtitle, description, technologies} = req.body
-
+    const {title, subtitle, description, technologies, images, mainImage} = req.body
+    const files = req.files
+    console.log(files)
     const error = bodyErrors(req)
     if (error) throw error
-
-    if (!req.file) {
+    if (!files?.length) {
       const error: CustomError = new Error('No image provided')
       error.statusCode = 422
       throw error
     }
 
+    const filePathArray = (files as Express.Multer.File[]).map(file => {
+      return file.path.replace('src\\', '').replace('\\', '/')
+    })
+    const realMainImage = filePathArray[mainImage]
+
     const project = new Project({
       title,
-      subtitle,
-      description,
-      imageUrl: req.file.path.replace('\\' ,'/'),
-      technologies: mergeArrays([], technologies, req.lang!)
+      subtitle: JSON.parse(subtitle),
+      description: JSON.parse(description),
+      images: filePathArray,
+      mainImage: realMainImage,
+      technologies: JSON.parse(technologies)
     })
 
     const savedProject = await project.save()
@@ -350,31 +357,37 @@ export const postProject = async(req: CustomRequest, res: Response, next: NextFu
 }
 export const putProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const projectId = req.params.projectId
-    const {title, subtitle, description, technologies} = req.body
-    let imageUrl = req.body.image
+    const {title, subtitle, description, technologies, mainImage, _id} = req.body
+    let images = JSON.parse(req.body.images)
 
     let error = bodyErrors(req)
     if (error) throw error
 
-    if (req.file) imageUrl = req.file.path.replace('\\' ,'/')
-    if (!imageUrl) {
-      error = new Error('No file picked')
+    if (req.files?.length) {
+      const filePathArray = (req.files as Express.Multer.File[]).map(file => {
+        return file.path.replace('src\\', '').replace('\\', '/')
+      })
+      images = [...images, ...filePathArray]
+    }
+
+    if (!images.length) {
+      error = new Error('No images provided')
       error.statusCode = 422
       throw error
     }
 
-    const project = await Project.findOne({_id: projectId})
-    if (imageUrl !== project.imageUrl) clearImage(project.imageUrl)
+    const project = await Project.findOne({_id})
+    // if (imageUrl !== project.imageUrl) clearImage(project.imageUrl)
+
+    const realMainImage = typeof mainImage === 'number' ? images[mainImage] : mainImage
 
     if (project) {
       if (title) project.title = title
-      if (subtitle) project.subtitle = subtitle
-      if (description) project.description = description
-      if (imageUrl) project.imageUrl = imageUrl
-      if (technologies) {
-        project.technologies = mergeArrays(project.technologies, technologies, req.lang!)
-      }
+      if (subtitle) project.subtitle = JSON.parse(subtitle)
+      if (description) project.description = JSON.parse(description)
+      if (images) project.images = images
+      if (technologies) project.technologies = JSON.parse(technologies)
+      if (realMainImage) project.mainImage = realMainImage
 
       const savedProject = await project.save()
       return res.status(201).json({result: savedProject})

@@ -5,7 +5,8 @@ import {
   getProjects,
   getConfig,
   getWorkList,
-  getProjectById
+  getProjectById,
+  sendEmail
 } from '../controllers/cv'
 
 const router = Router()
@@ -21,5 +22,7 @@ router.get('/projects', getProjects)
 router.get('/projects/:workId', getProjectById)
 /** Work **/
 router.get('/work', getWorkList)
+/** Email **/
+router.post('/email', sendEmail)
 
 export default router
