@@ -10,6 +10,14 @@ const stringSchemaWithId = new Schema({
   uk: String
 })
 
+const image = new Schema({
+  src: {
+    type: String,
+    required: false
+  },
+  base64: String
+}, {_id: false})
+
 const workSchema = new Schema({
   title: String,
   subtitle: stringSchemaNoId,
@@ -18,7 +26,7 @@ const workSchema = new Schema({
   position: String,
   duration: String,
   technologies: [String],
-  imageUrl: String
+  imageUrl: image
 })
 
 export default model('Work', workSchema)

@@ -2,12 +2,10 @@ import {NextFunction, Response} from 'express'
 import {CustomRequest, CustomError} from '../ts-models'
 import {Express} from 'express'
 
-import {clearImage} from '../utils/helpers/imageHelper'
-import mergeArrays from '../utils/helpers/mergeArraysHelper'
+import {clearImage, convertImageWithSharp} from '../utils/helpers/imageHelper'
 import bodyErrors from "../utils/helpers/validationResultHelper";
 
 import About from '../models/about'
-import Contact from '../models/contact'
 import Work from '../models/work'
 import Project from '../models/project'
 import Config from '../models/config'
@@ -17,14 +15,16 @@ import Education from '../models/education'
 export const putConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {links, status, emailReceiver, name} = req.body
-    let imageUrl = req.body.image
+    let imageUrl = JSON.parse(req.body.avatar)
 
     let error = bodyErrors(req)
     if (error) throw error
 
     if (req.files?.length) {
-      const filePath = (req.files as Express.Multer.File[])[0].path
-      imageUrl = filePath.replace('src\\', '').replace('\\', '/')
+      const file = (req.files as Express.Multer.File[])[0]
+      const {filePath, fileBase64} = await convertImageWithSharp(file)
+      imageUrl.src = filePath
+      imageUrl.base64 = fileBase64
     }
 
     if (!imageUrl) {
@@ -35,7 +35,7 @@ export const putConfig = async(req: CustomRequest, res: Response, next: NextFunc
 
     const config = await Config.findOne()
     if (imageUrl !== config.avatar) {
-      clearImage(config.avatar)
+      clearImage(config.avatar.src)
     }
 
     if (links) config.links = JSON.parse(links)
@@ -225,15 +225,16 @@ export const deleteCourses = async(req: CustomRequest, res: Response, next: Next
 export const postWork = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {title, subtitle, description, responsibilities, technologies, position, duration} = req.body
+    let imageUrl = JSON.parse(req.body.imageUrl)
 
     let error = bodyErrors(req)
     if (error) throw error
 
-    let imageUrl = req.body.imageUrl
     if (req.files?.length) {
-      imageUrl = (req.files as Express.Multer.File[])[0].path
-        .replace('src\\', '')
-        .replace('\\', '/')
+      const file = (req.files as Express.Multer.File[])[0]
+      const {filePath, fileBase64} = await convertImageWithSharp(file)
+      imageUrl.src = filePath
+      imageUrl.base64 = fileBase64
     }
     if (!imageUrl) {
       error = new Error('No avatar provided')
@@ -262,19 +263,19 @@ export const postWork = async(req: CustomRequest, res: Response, next: NextFunct
 export const putWork = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {title, subtitle, description, responsibilities, technologies, position, duration, _id} = req.body
-    let imageUrl = req.body.image
+    let imageUrl = req.body.imageUrl ? JSON.parse(req.body.imageUrl) : {}
 
     let error = bodyErrors(req)
     if (error) throw error
 
     const work = await Work.findOne({_id})
-
     if (!imageUrl) imageUrl = work.imageUrl
 
     if (req.files?.length) {
-      imageUrl = (req.files as Express.Multer.File[])[0].path
-        .replace('src\\', '')
-        .replace('\\', '/')
+      const file = (req.files as Express.Multer.File[])[0]
+      const {filePath, fileBase64} = await convertImageWithSharp(file)
+      imageUrl.src = filePath
+      imageUrl.base64 = fileBase64
     }
 
     if (!imageUrl) {
@@ -323,20 +324,26 @@ export const deleteWork = async(req: CustomRequest, res: Response, next: NextFun
 /** Projects **/
 export const postProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {title, subtitle, description, technologies, images, mainImage} = req.body
+    const {title, subtitle, description, technologies, mainImage, link} = req.body
     const files = req.files
-    console.log(files)
+
     const error = bodyErrors(req)
     if (error) throw error
+
     if (!files?.length) {
       const error: CustomError = new Error('No image provided')
       error.statusCode = 422
       throw error
     }
 
-    const filePathArray = (files as Express.Multer.File[]).map(file => {
-      return file.path.replace('src\\', '').replace('\\', '/')
-    })
+    const filePathArray = await Promise.all((files as Express.Multer.File[]).map(async(file) => {
+      const {filePath, fileBase64} = await convertImageWithSharp(file)
+      return {
+        src: filePath,
+        base64: fileBase64
+      }
+    }))
+
     const realMainImage = filePathArray[mainImage]
 
     const project = new Project({
@@ -345,7 +352,8 @@ export const postProject = async(req: CustomRequest, res: Response, next: NextFu
       description: JSON.parse(description),
       images: filePathArray,
       mainImage: realMainImage,
-      technologies: JSON.parse(technologies)
+      technologies: JSON.parse(technologies),
+      link
     })
 
     const savedProject = await project.save()
@@ -357,16 +365,20 @@ export const postProject = async(req: CustomRequest, res: Response, next: NextFu
 }
 export const putProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {title, subtitle, description, technologies, mainImage, _id} = req.body
+    const {title, subtitle, description, technologies, mainImage, _id, link} = req.body
     let images = JSON.parse(req.body.images)
 
     let error = bodyErrors(req)
     if (error) throw error
 
     if (req.files?.length) {
-      const filePathArray = (req.files as Express.Multer.File[]).map(file => {
-        return file.path.replace('src\\', '').replace('\\', '/')
-      })
+      const filePathArray = await Promise.all((req.files as Express.Multer.File[]).map(async file => {
+        const {filePath, fileBase64} = await convertImageWithSharp(file)
+        return {
+          src: filePath,
+          base64: fileBase64
+        }
+      }))
       images = [...images, ...filePathArray]
     }
 
@@ -378,8 +390,7 @@ export const putProject = async(req: CustomRequest, res: Response, next: NextFun
 
     const project = await Project.findOne({_id})
     // if (imageUrl !== project.imageUrl) clearImage(project.imageUrl)
-
-    const realMainImage = typeof mainImage === 'number' ? images[mainImage] : mainImage
+    const realMainImage = !isNaN(mainImage) ? images[mainImage] : JSON.parse(mainImage)
 
     if (project) {
       if (title) project.title = title
@@ -388,6 +399,7 @@ export const putProject = async(req: CustomRequest, res: Response, next: NextFun
       if (images) project.images = images
       if (technologies) project.technologies = JSON.parse(technologies)
       if (realMainImage) project.mainImage = realMainImage
+      if (link) project.link = link
 
       const savedProject = await project.save()
       return res.status(201).json({result: savedProject})

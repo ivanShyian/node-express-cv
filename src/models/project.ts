@@ -5,13 +5,23 @@ const nestedSchema = new Schema({
   ua: String
 }, {_id: false})
 
+const image = new Schema({
+  src: {
+    type: String,
+    required: false
+  },
+  base64: String
+}, {_id: false})
+
+
 const projectSchema = new Schema({
   title: String,
   subtitle: nestedSchema,
   description: nestedSchema,
   technologies: [String],
-  images: [String],
-  mainImage: String
+  images: [image],
+  mainImage: image,
+  link: String
 })
 
 export default model('Project', projectSchema)

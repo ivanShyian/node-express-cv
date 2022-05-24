@@ -6,15 +6,20 @@ const simpleNestedSchema = new Schema({
   _id: String
 })
 
+const image = new Schema({
+  src: {
+    type: String,
+    required: false
+  },
+  base64: String
+}, {_id: false})
+
 const configSchema = new Schema({
   name: {
     en: String,
     uk: String
   },
-  avatar: {
-    type: String,
-    required: true
-  },
+  avatar: image,
   status: [simpleNestedSchema],
   links: {
     type: Map,

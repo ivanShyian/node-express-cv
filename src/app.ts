@@ -10,7 +10,6 @@ import helmet from 'helmet'
 import compression from 'compression'
 
 import authMiddleware from './middlewares/is-auth'
-import bodyMiddleware from './middlewares/transform-body'
 import errorMiddleware from './middlewares/error'
 import adminRoutes from './routes/admin'
 import cvRoutes from './routes/cv'
@@ -22,7 +21,7 @@ const app = express()
 dotenv.config()
 
 app.use(cors({
-	origin: ["http://localhost:3000"],
+	origin: ["http://localhost:3000", "http://192.168.0.101:3000"],
 	credentials: true,
 	methods: 'GET, POST, PUT, DELETE, OPTIONS',
 	allowedHeaders: 'Authorization, Content-Type, Accept-Language'
@@ -32,13 +31,13 @@ app.use(helmet())
 app.use(compression())
 app.use(bodyParser.json())
 app.use(multer({
+	limits: { fieldSize: 25 * 1024 * 1024 },
 	storage: fileStorage,
 	fileFilter
 }).any())
 
 app.use('/images', express.static(path.join(__dirname, 'images')))
 
-// app.use(bodyMiddleware)
 app.use('/admin', authMiddleware, adminRoutes)
 app.use(cvRoutes)
 app.use(loginRoutes)
