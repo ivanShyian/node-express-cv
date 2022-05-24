@@ -1,4 +1,5 @@
-import {body} from 'express-validator'
+import {body, check} from 'express-validator'
+import {LangStringObject} from '../ts-models'
 
 const textValidator = (field = 'text', minLength = 2, maxLength = 255) => {
   return body(field)
@@ -6,12 +7,14 @@ const textValidator = (field = 'text', minLength = 2, maxLength = 255) => {
     .withMessage(`Length of ${field} must be between ${minLength} and ${maxLength}`)
 }
 
-const arrayValidator = (field = 'array') => {
-  return body(field).isArray()
-}
 
-const objectArrayValidator = (arrayName = 'array', key = 'key') => {
-  return body(`${arrayName}.*.${key}`)
+const checkLangString = (field = '') => {
+  return body(field)
+    .custom(value => {
+      const data: LangStringObject = JSON.parse(value)
+      if (!data.en || !data.uk) throw new Error(`${data} is Invalid`)
+      return true
+    })
 }
 
 const emailValidator = (field = '') => {
@@ -19,16 +22,21 @@ const emailValidator = (field = '') => {
 }
 
 export const aboutValidation = () => {
+  const min = 100
   return [
-    textValidator('text')
-    // @TODO Add techs validation
-  ]
-}
-
-export const contactValidation = () => {
-  return [
-    textValidator('name'),
-    textValidator('value')
+    body('text.en')
+      .isLength({min})
+      .withMessage(`Text EN must be ${min} length min`),
+    body('text.uk')
+      .isLength({min})
+      .withMessage(`Text UK must be ${min} length min`),
+    body('techs')
+      .custom(values => {
+        values.forEach((val: {name: string, value: number, _id?: string}) => {
+          if (val.value <= 0 || val.value > 100) throw new Error(`Value can't be ${val.value}`)
+        })
+        return true
+      })
   ]
 }
 
@@ -54,17 +62,32 @@ export const projectValidation = () => {
 export const configValidation = () => {
   return [
     textValidator('emailReceiver'),
-    // @TODO Add [links, status] validation
-    // arrayValidator('links'),
-    // arrayValidator('status')
-    // objectArrayValidator('links', 'name'),
-    // objectArrayValidator('links', 'value'),
+    checkLangString('name'),
+    body('links')
+      .custom(value => {
+        const links = JSON.parse(value)
+        for (let link in links) {
+          const url = new URL(links[link])
+          if (!url.hash && url.pathname.substring(url.pathname.length - 1) === '/') {
+            throw new Error(`${link} = ${links[link]} invalid. Valid link without hash and ends without '/'`)
+          }
+        }
+        return true
+      }),
+    body('status')
+      .custom(value => {
+        const status: LangStringObject[] = JSON.parse(value)
+        status.forEach((data) => {
+          if (!data.en || !data.uk) throw new Error(`${data} is Invalid`)
+        })
+        return true
+      })
   ]
 }
 
 export const loginValidator = () => {
   return [
     emailValidator('email'),
-    textValidator('password')
+    textValidator('password', 6)
   ]
 }

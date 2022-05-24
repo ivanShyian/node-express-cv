@@ -9,3 +9,8 @@ export interface CustomRequest extends Request {
   userId?: string
   lang?: string
 }
+
+export interface LangStringObject {
+  en: string
+  uk: string
+}

@@ -5,6 +5,6 @@ import {loginValidator} from '../validators'
 const router = Router()
 
 router.post('/login', loginValidator(), postLogin)
-router.post('/logout')
+// router.post('/logout')
 
 export default router
