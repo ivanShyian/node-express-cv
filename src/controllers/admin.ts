@@ -92,7 +92,7 @@ export const postEducationSchool = async(req: CustomRequest, res: Response, next
         education.school = schoolCopy
       }
       const savedEducation = await education.save()
-      res.status(200).json({result: savedEducation})
+      return res.status(200).json({result: savedEducation})
     }
     const error: CustomError = new Error('Education wasn\'t found')
     error.statusCode = 404
@@ -121,36 +121,20 @@ export const deleteEducation = async(req: CustomRequest, res: Response, next: Ne
   }
 }
 
-export const deleteTech = async(req: CustomRequest, res: Response, next: NextFunction) => {
-  try {
-    const {id} = req.params
-    const education = await Education.findOne()
-    if (education) {
-      const arrayIdToRemove = id.split(';')
-      education.techs = [...education.techs.filter((el: any) => !arrayIdToRemove.includes(el._id.toString()))]
-      const savedEducation = await education.save()
-      res.status(200).json({result: savedEducation})
-    }
-    const error: CustomError = new Error('Education wasn\'t found')
-    error.statusCode = 404
-    throw error
-  } catch (e: any) {
-    if (!e.statusCode) e.statusCode = 500
-    next(e)
-  }
-}
-
-
 export const postEducationTech = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {techs} = req.body
+
+    let error = bodyErrors(req)
+    if (error) throw error
+
     const education = await Education.findOne()
     if (education) {
       education.techs = [...education.techs, ...techs]
       const savedEducation = await education.save()
-      res.status(200).json({result: savedEducation})
+      return res.status(200).json({result: savedEducation})
     }
-    const error: CustomError = new Error('Education wasn\'t found')
+    error = new Error('Education wasn\'t found')
     error.statusCode = 404
     throw error
   } catch (e: any) {
@@ -162,25 +146,34 @@ export const postEducationTech = async(req: CustomRequest, res: Response, next: 
 export const putEducationTech = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {techs} = req.body
+
+    let error = bodyErrors(req)
+    if (error) throw error
+
     const education = await Education.findOne()
     if (education) {
-      education.techs = education.techs.map((tech: any) => {
-        const foundIndex = techs.findIndex((userTech: any) => userTech._id === tech._id.toString())
-        if (foundIndex !== -1) {
-          return {
-            ...tech._doc,
-            courses: [
-              ...tech._doc.courses,
-              ...techs[foundIndex].courses
-            ]
-          }
+      let educationTechsCopy = [...education.techs]
+      techs.forEach((tech: any) => {
+        const techIndex = educationTechsCopy.findIndex((educTech: any) => educTech._id.toString() === tech._id.toString())
+        if (techIndex !== -1) {
+          tech.courses.forEach((course: any) => {
+            const courseIndex = educationTechsCopy[techIndex].courses.findIndex((educCourse: any) => educCourse._id.toString() === course._id)
+            if (courseIndex !== -1) {
+              educationTechsCopy[techIndex].courses[courseIndex] = {
+                ...educationTechsCopy[techIndex].courses[courseIndex],
+                ...course
+              }
+            } else {
+              educationTechsCopy[techIndex].courses.push(course)
+            }
+          })
         }
-        return tech
       })
+      education.techs = educationTechsCopy
       const savedEducation = await education.save()
-      res.status(200).json({result: savedEducation})
+      return res.status(200).json({result: savedEducation})
     }
-    const error: CustomError = new Error('Education wasn\'t found')
+    error = new Error('Education wasn\'t found')
     error.statusCode = 404
     throw error
   } catch (e: any) {
@@ -211,10 +204,29 @@ export const deleteCourses = async(req: CustomRequest, res: Response, next: Next
         return tech
       })
       const savedEducation = await education.save()
-      res.status(200).json({result: savedEducation})
+      return res.status(200).json({result: savedEducation})
     }
     const error: CustomError = new Error('Education wasn\'t found')
     error.statusCode = 404
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+
+export const deleteTech = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const {id} = req.params
+    const education = await Education.findOne()
+    if (education) {
+      const arrayIdToRemove = id.split(';')
+      education.techs = [...education.techs.filter((el: any) => !arrayIdToRemove.includes(el._id.toString()))]
+      const savedEducation = await education.save()
+      return res.status(200).json({result: savedEducation})
+    }
+    const error: CustomError = new Error('Education wasn\'t found')
+    error.statusCode = 404
+    throw error
   } catch (e: any) {
     if (!e.statusCode) e.statusCode = 500
     next(e)
@@ -327,11 +339,11 @@ export const postProject = async(req: CustomRequest, res: Response, next: NextFu
     const {title, subtitle, description, technologies, mainImage, link} = req.body
     const files = req.files
 
-    const error = bodyErrors(req)
+    let error = bodyErrors(req)
     if (error) throw error
 
     if (!files?.length) {
-      const error: CustomError = new Error('No image provided')
+      error = new Error('No image provided')
       error.statusCode = 422
       throw error
     }

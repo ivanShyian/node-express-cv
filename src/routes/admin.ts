@@ -20,7 +20,9 @@ import {
   aboutValidation,
   projectValidation,
   workValidation,
-  configValidation
+  configValidation,
+  educationTechValidation,
+  educationSchoolValidation
 } from '../validators'
 
 const router = Router()
@@ -30,19 +32,19 @@ router.put('/config', configValidation(), putConfig)
 /** About **/
 router.put('/about', aboutValidation(), putAbout)
 /** Education **/
-router.post('/education/techs', postEducationTech)
-router.put('/education/techs', putEducationTech)
-router.post('/education/school', postEducationSchool)
+router.post('/education/techs', educationTechValidation(), postEducationTech)
+router.put('/education/techs', educationTechValidation(), putEducationTech)
+router.post('/education/school', educationSchoolValidation(), postEducationSchool)
 router.delete('/education/school/:id', deleteEducation)
 router.delete('/education/techs/:id', deleteTech)
 router.delete('/education/courses/:id', deleteCourses)
 /** Work **/
-router.post('/work', postWork)
-router.put('/work', putWork)
+router.post('/work', workValidation(), postWork)
+router.put('/work', workValidation(), putWork)
 router.delete('/work/:workId', deleteWork)
 /** Projects **/
-router.post('/project', postProject)
-router.put('/project', putProject)
+router.post('/project', projectValidation(), postProject)
+router.put('/project', projectValidation(), putProject)
 router.delete('/project/:projectId', deleteProject)
 
 export default router
