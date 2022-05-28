@@ -45,6 +45,7 @@ app.use(errorMiddleware)
 
 ;(async() => {
 	await mongoose.connect(`mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@clusterfrankfurt.meiyt.mongodb.net/cvDatabase`)
-	console.log('<== Database connected ==>')
-	app.listen(process.env.PORT || 8080)
+	app.listen(process.env.PORT || 8080, () => {
+		console.log('≧◠‿◠≦ SERVER INIT ≧◠‿◠≦')
+	})
 })()

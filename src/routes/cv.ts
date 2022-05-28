@@ -8,6 +8,7 @@ import {
   getProjectById,
   sendEmail
 } from '../controllers/cv'
+import {emailValidation} from '../validators'
 
 const router = Router()
 
@@ -23,6 +24,6 @@ router.get('/projects/:workId', getProjectById)
 /** Work **/
 router.get('/work', getWorkList)
 /** Email **/
-router.post('/email', sendEmail)
+router.post('/email', emailValidation(), sendEmail)
 
 export default router

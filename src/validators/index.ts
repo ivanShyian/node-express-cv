@@ -10,7 +10,6 @@ const textValidator = (field = 'text', minLength = 2, maxLength = 255) => {
   }).withMessage(`Length of ${field} must be between ${minLength} and ${maxLength}`)
 }
 
-
 const checkLangString = (field = '') => {
   return body(field).custom(value => {
     const data: LangStringObject = typeof value === 'string' ? JSON.parse(value) : value
@@ -132,9 +131,18 @@ export const educationSchoolValidation = () => {
   ]
 }
 
-export const loginValidator = () => {
+export const loginValidation = () => {
   return [
     emailValidator('email'),
     textValidator('password', 6)
+  ]
+}
+
+export const emailValidation = () => {
+  return [
+    textValidator('name', 2, 50),
+    emailValidator('email'),
+    textValidator('subject', 2, 100),
+    textValidator('message', 4, 10000)
   ]
 }

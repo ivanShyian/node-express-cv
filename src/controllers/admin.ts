@@ -1,5 +1,5 @@
 import {NextFunction, Response} from 'express'
-import {CustomRequest, CustomError} from '../ts-models'
+import {CustomRequest, CustomError, IEducation, Techs, IConfig, IAbout, IWork, IProject} from '../ts-models'
 import {Express} from 'express'
 
 import {clearImage, convertImageWithSharp} from '../utils/helpers/imageHelper'
@@ -33,7 +33,8 @@ export const putConfig = async(req: CustomRequest, res: Response, next: NextFunc
       throw error
     }
 
-    const config = await Config.findOne()
+    const config = await Config.findOne() as IConfig
+
     if (imageUrl !== config.avatar) {
       clearImage(config.avatar.src)
     }
@@ -61,7 +62,7 @@ export const putAbout = async(req: CustomRequest, res: Response, next: NextFunct
     let error = bodyErrors(req)
     if (error) throw error
 
-    const about = await About.findOne()
+    const about = await About.findOne() as IAbout
 
     if (text) about.text = text
     if (techs) about.techs = techs
@@ -78,7 +79,7 @@ export const postEducationSchool = async(req: CustomRequest, res: Response, next
   try {
     const {data, type} = req.body
 
-    const education = await Education.findOne()
+    const education = await Education.findOne() as IEducation
     if (education) {
       if (type === 'add') {
         education.school = [
@@ -87,7 +88,7 @@ export const postEducationSchool = async(req: CustomRequest, res: Response, next
         ]
       } else if (type === 'edit') {
         let schoolCopy = [...education.school]
-        const foundIndex = education.school.findIndex((s: any) => s._id.toString() === data._id.toString())
+        const foundIndex = education.school.findIndex((s) => s._id!.toString() === data._id.toString())
         schoolCopy[foundIndex] = {...data}
         education.school = schoolCopy
       }
@@ -106,9 +107,9 @@ export const postEducationSchool = async(req: CustomRequest, res: Response, next
 export const deleteEducation = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {id} = req.params
-    const education = await Education.findOne()
+    const education = await Education.findOne() as IEducation
     if (education) {
-      education.school = [...education.school.filter((el: any) => el._id.toString() !== id)]
+      education.school = [...education.school.filter((el) => el._id!.toString() !== id)]
       const savedEducation = await education.save()
       res.status(200).json({result: savedEducation})
     }
@@ -128,7 +129,7 @@ export const postEducationTech = async(req: CustomRequest, res: Response, next: 
     let error = bodyErrors(req)
     if (error) throw error
 
-    const education = await Education.findOne()
+    const education = await Education.findOne() as IEducation
     if (education) {
       education.techs = [...education.techs, ...techs]
       const savedEducation = await education.save()
@@ -150,14 +151,14 @@ export const putEducationTech = async(req: CustomRequest, res: Response, next: N
     let error = bodyErrors(req)
     if (error) throw error
 
-    const education = await Education.findOne()
+    const education = await Education.findOne() as IEducation
     if (education) {
-      let educationTechsCopy = [...education.techs]
-      techs.forEach((tech: any) => {
-        const techIndex = educationTechsCopy.findIndex((educTech: any) => educTech._id.toString() === tech._id.toString())
+      let educationTechsCopy = [...education.techs];
+      (techs as Techs[]).forEach((tech) => {
+        const techIndex = educationTechsCopy.findIndex((educTech) => educTech._id!.toString() === tech._id!.toString())
         if (techIndex !== -1) {
-          tech.courses.forEach((course: any) => {
-            const courseIndex = educationTechsCopy[techIndex].courses.findIndex((educCourse: any) => educCourse._id.toString() === course._id)
+          tech.courses.forEach((course) => {
+            const courseIndex = educationTechsCopy[techIndex].courses.findIndex((educCourse) => educCourse._id!.toString() === course._id)
             if (courseIndex !== -1) {
               educationTechsCopy[techIndex].courses[courseIndex] = {
                 ...educationTechsCopy[techIndex].courses[courseIndex],
@@ -185,17 +186,17 @@ export const putEducationTech = async(req: CustomRequest, res: Response, next: N
 export const deleteCourses = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {id} = req.params
-    const education = await Education.findOne()
+    const education = await Education.findOne() as IEducation
     if (education) {
       let deleteMap: {[key: string]: string[]} = {}
       id.split('&').forEach(el => {
         const [techId, courseIds] = el.split('=')
         deleteMap[techId] = courseIds.split(';')
       })
-      education.techs = education.techs.map((tech: any) => {
-        if (Object.keys(deleteMap).includes(tech._id.toString())) {
-          const coursesToRemove = deleteMap[tech._id.toString()]
-          const coursesCopy = tech.courses.filter((fTech: any) => !coursesToRemove.includes(fTech._id.toString()))
+      education.techs = education.techs.map((tech) => {
+        if (Object.keys(deleteMap).includes(tech._id!.toString())) {
+          const coursesToRemove = deleteMap[tech._id!.toString()]
+          const coursesCopy = tech.courses.filter((fTech) => !coursesToRemove.includes(fTech._id!.toString()))
           return {
             ...tech,
             courses: coursesCopy
@@ -217,10 +218,10 @@ export const deleteCourses = async(req: CustomRequest, res: Response, next: Next
 export const deleteTech = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {id} = req.params
-    const education = await Education.findOne()
+    const education = await Education.findOne() as IEducation
     if (education) {
       const arrayIdToRemove = id.split(';')
-      education.techs = [...education.techs.filter((el: any) => !arrayIdToRemove.includes(el._id.toString()))]
+      education.techs = [...education.techs.filter((el) => !arrayIdToRemove.includes(el._id!.toString()))]
       const savedEducation = await education.save()
       return res.status(200).json({result: savedEducation})
     }
@@ -263,7 +264,7 @@ export const postWork = async(req: CustomRequest, res: Response, next: NextFunct
       position,
       duration,
       imageUrl
-    })
+    }) as IWork
 
     const savedWork = await work.save()
     res.status(201).json({result: savedWork})
@@ -280,7 +281,7 @@ export const putWork = async(req: CustomRequest, res: Response, next: NextFuncti
     let error = bodyErrors(req)
     if (error) throw error
 
-    const work = await Work.findOne({_id})
+    const work = await Work.findOne({_id}) as IWork
     if (!imageUrl) imageUrl = work.imageUrl
 
     if (req.files?.length) {
@@ -366,7 +367,7 @@ export const postProject = async(req: CustomRequest, res: Response, next: NextFu
       mainImage: realMainImage,
       technologies: JSON.parse(technologies),
       link
-    })
+    }) as IProject
 
     const savedProject = await project.save()
     res.status(201).json({result: savedProject})
@@ -400,7 +401,7 @@ export const putProject = async(req: CustomRequest, res: Response, next: NextFun
       throw error
     }
 
-    const project = await Project.findOne({_id})
+    const project = await Project.findOne({_id}) as IProject
     // if (imageUrl !== project.imageUrl) clearImage(project.imageUrl)
     const realMainImage = !isNaN(mainImage) ? images[mainImage] : JSON.parse(mainImage)
 
