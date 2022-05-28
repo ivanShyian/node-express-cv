@@ -15,7 +15,7 @@ import Education from '../models/education'
 export const putConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {links, status, emailReceiver, name} = req.body
-    let imageUrl = JSON.parse(req.body.avatar)
+    let imageUrl = req.body.avatar ? JSON.parse(req.body.avatar) : {}
 
     let error = bodyErrors(req)
     if (error) throw error
@@ -27,17 +27,10 @@ export const putConfig = async(req: CustomRequest, res: Response, next: NextFunc
       imageUrl.base64 = fileBase64
     }
 
-    if (!imageUrl) {
-      error = new Error('No avatar provided')
-      error.statusCode = 422
-      throw error
-    }
-
     const config = await Config.findOne() as IConfig
 
-    if (imageUrl !== config.avatar) {
-      clearImage(config.avatar.src)
-    }
+    if (!Object.keys(imageUrl).length) imageUrl = config.avatar
+    if (imageUrl.src !== config.avatar.src) clearImage(config.avatar.src)
 
     if (links) config.links = JSON.parse(links)
     if (status) config.status = JSON.parse(status)
@@ -46,7 +39,6 @@ export const putConfig = async(req: CustomRequest, res: Response, next: NextFunc
     if (imageUrl) config.avatar = imageUrl
 
     const savedConfig = await config.save()
-
     res.status(200).json({result: savedConfig})
   } catch (e: any) {
     if (!e.statusCode) e.statusCode = 500
@@ -111,7 +103,7 @@ export const deleteEducation = async(req: CustomRequest, res: Response, next: Ne
     if (education) {
       education.school = [...education.school.filter((el) => el._id!.toString() !== id)]
       const savedEducation = await education.save()
-      res.status(200).json({result: savedEducation})
+      return res.status(200).json({result: savedEducation})
     }
     const error: CustomError = new Error('Education wasn\'t found')
     error.statusCode = 404
@@ -238,7 +230,7 @@ export const deleteTech = async(req: CustomRequest, res: Response, next: NextFun
 export const postWork = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {title, subtitle, description, responsibilities, technologies, position, duration} = req.body
-    let imageUrl = JSON.parse(req.body.imageUrl)
+    let imageUrl = req.body.imageUrl ? JSON.parse(req.body.imageUrl) : {}
 
     let error = bodyErrors(req)
     if (error) throw error
@@ -249,7 +241,8 @@ export const postWork = async(req: CustomRequest, res: Response, next: NextFunct
       imageUrl.src = filePath
       imageUrl.base64 = fileBase64
     }
-    if (!imageUrl) {
+
+    if (!Object.keys(imageUrl).length) {
       error = new Error('No avatar provided')
       error.statusCode = 422
       throw error
@@ -281,9 +274,6 @@ export const putWork = async(req: CustomRequest, res: Response, next: NextFuncti
     let error = bodyErrors(req)
     if (error) throw error
 
-    const work = await Work.findOne({_id}) as IWork
-    if (!imageUrl) imageUrl = work.imageUrl
-
     if (req.files?.length) {
       const file = (req.files as Express.Multer.File[])[0]
       const {filePath, fileBase64} = await convertImageWithSharp(file)
@@ -291,10 +281,11 @@ export const putWork = async(req: CustomRequest, res: Response, next: NextFuncti
       imageUrl.base64 = fileBase64
     }
 
-    if (!imageUrl) {
-      error = new Error('No avatar provided')
-      error.statusCode = 422
-      throw error
+    const work = await Work.findOne({_id}) as IWork
+
+    if (!Object.keys(imageUrl).length) imageUrl = work.imageUrl
+    if (imageUrl.src !== work.imageUrl.src) {
+      clearImage(work.imageUrl.src)
     }
 
     if (work) {
@@ -321,8 +312,9 @@ export const putWork = async(req: CustomRequest, res: Response, next: NextFuncti
 export const deleteWork = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const workId = req.params.workId
-    const work = await Work.findOneAndRemove({_id: workId})
+    const work = await Work.findOneAndRemove({_id: workId}) as IWork
     if (work) {
+      clearImage(work.imageUrl.src)
       return res.status(204).json({result: 'Deleted successfully'})
     }
     const error: CustomError = new Error('Work wasn\'t found')
@@ -379,7 +371,7 @@ export const postProject = async(req: CustomRequest, res: Response, next: NextFu
 export const putProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const {title, subtitle, description, technologies, mainImage, _id, link} = req.body
-    let images = JSON.parse(req.body.images)
+    let images = req.body.images?.length ? JSON.parse(req.body.images) : []
 
     let error = bodyErrors(req)
     if (error) throw error
@@ -395,14 +387,14 @@ export const putProject = async(req: CustomRequest, res: Response, next: NextFun
       images = [...images, ...filePathArray]
     }
 
-    if (!images.length) {
-      error = new Error('No images provided')
-      error.statusCode = 422
-      throw error
-    }
-
     const project = await Project.findOne({_id}) as IProject
-    // if (imageUrl !== project.imageUrl) clearImage(project.imageUrl)
+
+    if (!images.length) images = project.images
+
+    project.images.forEach((image, index) => {
+      if (!images[index]) clearImage(image.src)
+    })
+
     const realMainImage = !isNaN(mainImage) ? images[mainImage] : JSON.parse(mainImage)
 
     if (project) {
@@ -428,8 +420,9 @@ export const putProject = async(req: CustomRequest, res: Response, next: NextFun
 export const deleteProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const projectId = req.params.projectId
-    const project = await Project.findOneAndRemove({_id: projectId})
+    const project = await Project.findOneAndRemove({_id: projectId}) as IProject
     if (project) {
+      project.images.forEach((image) => clearImage(image.src))
       return res.status(204).json({result: 'Deleted successfully'})
     }
     const error: CustomError = new Error('Work wasn\'t found')
