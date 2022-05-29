@@ -6,8 +6,8 @@
   "exports": "./dist/app.js",
   "scripts": {
     "build": "tsc",
-    "start": "tsc & node .",
-    "dev": "env PORT=8080 nodemon",
+    "start": "tsc & env NODE_ENV=production node .",
+    "dev": "env PORT=8080 env NODE_ENV=development nodemon",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

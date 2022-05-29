@@ -1,8 +1,12 @@
 import multer, {FileFilterCallback} from 'multer'
 import {Request} from 'express'
+import dotenv from 'dotenv'
+dotenv.config()
+
+const IMAGE_PATH = process.env.NODE_ENV === 'production' ? './images/' : './src/images/'
 
 export const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, './src/images/'),
+  destination: (req, file, cb) => cb(null, IMAGE_PATH),
   filename: (req, file, cb) => cb(null, `${new Date().getTime()}_${file.originalname}`)
 })
 

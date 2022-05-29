@@ -20,6 +20,8 @@ import {fileStorage, fileFilter} from "./config/multer";
 const app = express()
 dotenv.config()
 
+console.log(process.env.NODE_ENV)
+
 app.use(cors({
 	origin: ["http://localhost:3000", "http://192.168.0.101:3000"],
 	credentials: true,
