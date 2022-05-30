@@ -35,7 +35,7 @@ app.use(bodyParser.json())
 app.use(multer({
 	limits: { fieldSize: 25 * 1024 * 1024 },
 	storage: fileStorage,
-	fileFilter
+	fileFilter,
 }).any())
 
 app.use('/images', express.static(path.join(__dirname, 'images')))

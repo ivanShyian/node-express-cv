@@ -1,10 +1,15 @@
 const fs = require('fs')
 const path = require('path')
-
+import dotenv from 'dotenv'
 import sharp from 'sharp'
 
+dotenv.config()
+
+const isProduction = process.env.NODE_ENV === 'production'
+const formatRegex = /\.[0-9a-z]+$/i
+
 export const clearImage = (filePath: string) => {
-  fs.unlink(path.join(__dirname, '../../../src', filePath), (err: any) => {
+  fs.unlink(path.join(__dirname, isProduction ? '../../../dist' : '../../../src', filePath), (err: any) => {
     console.log(err)
   })
 }
@@ -13,21 +18,23 @@ export const convertImageWithSharp = async(file: Express.Multer.File): Promise<{
   filePath: string
   fileBase64: string
 }> => {
-  const replacedFileName = file.filename.replace(/\.[0-9a-z]+$/, '')
-  const fileName = `${replacedFileName}.webp`
-  const filePath = file.path
+  let filePath = file.path
     .replace('src\\', '')
     .replace('\\', '/')
-    .replace(file.filename, fileName)
+    .replace(formatRegex, '.webp')
 
   await sharp(path.join(__dirname, '../../../', file.path))
     .resize({fit: "inside", height: 500})
     .webp({quality: 100})
-    .toFile(path.join(__dirname, '../../../', file.destination, fileName))
+    .toFile(path.join(__dirname, '../../../', filePath))
 
-  const base64 = await sharp(path.join(__dirname, '../../../src', filePath))
+  const base64 = await sharp(path.join(__dirname, isProduction ? '../../../' : '../../../src', filePath))
     .resize({fit: "cover", height: 350, width: 350})
     .toBuffer()
+
+  if (isProduction) {
+    filePath = filePath.replace(/(dist\\|dist\/)/, '')
+  }
 
   fs.unlinkSync(file.path)
 
