@@ -35,8 +35,8 @@ const emailValidator = (field = '') => {
 export const aboutValidation = () => {
   const min = 100
   return [
-    body('text.en').isLength({min}).isAlphanumeric().withMessage(`Text EN must be ${min} length min`),
-    body('text.uk').isLength({min}).isAlphanumeric().withMessage(`Text UK must be ${min} length min`),
+    body('text.en').isLength({min}).withMessage(`Text EN must be ${min} length min`),
+    body('text.uk').isLength({min}).withMessage(`Text UK must be ${min} length min`),
     body('techs').custom(values => {
       values.forEach((val: { name: string, value: number, _id?: string }) => {
         if (val.value <= 0 || val.value > 100) throw new Error(`Value can't be ${val.value}`)
