@@ -23,7 +23,7 @@ dotenv.config()
 console.log(process.env.NODE_ENV)
 
 app.use(cors({
-	origin: ["http://localhost:3000", "http://192.168.0.101:3000"],
+	origin: ["http://localhost:3000", "http://192.168.0.101:3000", "https://vanjkes.tech"],
 	credentials: true,
 	methods: 'GET, POST, PUT, DELETE, OPTIONS',
 	allowedHeaders: 'Authorization, Content-Type, Accept-Language'
