@@ -22,7 +22,8 @@ import {
   workValidation,
   configValidation,
   educationTechValidation,
-  educationSchoolValidation
+  educationSchoolValidation,
+  updateWorkValidation
 } from '../validators'
 
 const router = Router()
@@ -40,7 +41,7 @@ router.delete('/education/techs/:id', deleteTech)
 router.delete('/education/courses/:id', deleteCourses)
 /** Work **/
 router.post('/work', workValidation(), postWork)
-router.put('/work', workValidation(), putWork)
+router.put('/work', updateWorkValidation(), putWork)
 router.delete('/work/:workId', deleteWork)
 /** Projects **/
 router.post('/project', projectValidation(), postProject)

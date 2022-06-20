@@ -1,5 +1,6 @@
 import {body, check} from 'express-validator'
 import {LangStringObject} from '../ts-models'
+import exp from 'constants'
 
 const validPeriodRegEx = /(19|20)\d{2}-(19|20)\d{2}/
 
@@ -61,6 +62,24 @@ export const workValidation = () => {
     }),
     textValidator('position'),
     check('duration').custom((value: string) => validPeriodRegEx.test(value))
+  ]
+}
+
+export const updateWorkValidation = () => {
+  return [
+    textValidator('title').optional(),
+    checkLangString('subtitle').optional(),
+    checkLangString('description').optional(),
+    checkStringArray('technologies', 3, 50).optional(),
+    body('responsibilities').optional().custom((values) => {
+      const parsedLangArray: { en: string, uk: string }[] = JSON.parse(values)
+      parsedLangArray.forEach((data) => {
+        if (!(data.hasOwnProperty('en') || data.hasOwnProperty('uk'))) throw new Error(`${data} is Invalid`)
+      })
+      return true
+    }),
+    textValidator('position').optional(),
+    check('duration').optional().custom((value: string) => validPeriodRegEx.test(value))
   ]
 }
 
