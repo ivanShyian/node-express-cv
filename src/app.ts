@@ -30,7 +30,7 @@ app.use(cors({
 }))
 
 app.use(helmet({
-	crossOriginEmbedderPolicy: false
+	crossOriginResourcePolicy: false
 }))
 app.use(compression())
 app.use(bodyParser.json())
