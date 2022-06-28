@@ -81,7 +81,7 @@ export const getProjects = async(req: Request, res: Response, next: NextFunction
   try {
     const projects = await Project.find({}, '-description -technologies -images')
     if (projects) {
-      return res.status(200).json({projects})
+      return res.status(200).json({projects: projects.reverse()})
     }
     const error: CustomError = new Error('Projects is not provided yet')
     error.statusCode = 404
