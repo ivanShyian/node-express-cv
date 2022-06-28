@@ -29,7 +29,9 @@ app.use(cors({
 	allowedHeaders: 'Authorization, Content-Type, Accept-Language'
 }))
 
-app.use(helmet())
+app.use(helmet({
+	crossOriginEmbedderPolicy: false
+}))
 app.use(compression())
 app.use(bodyParser.json())
 app.use(multer({
