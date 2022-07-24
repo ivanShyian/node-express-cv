@@ -21,7 +21,11 @@ const projectSchema = new Schema({
   technologies: [String],
   images: [image],
   mainImage: image,
-  link: String
+  link: String,
+  isWork: {
+    type: Boolean,
+    required: false
+  }
 })
 
 export default model('Project', projectSchema)
