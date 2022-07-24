@@ -107,4 +107,5 @@ export interface IProject extends IBasicMongoose<IProject> {
   images: IImage[]
   mainImage: IImage
   link: string
+  isWork?: boolean
 }

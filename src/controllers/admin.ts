@@ -329,7 +329,7 @@ export const deleteWork = async(req: CustomRequest, res: Response, next: NextFun
 /** Projects **/
 export const postProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {title, subtitle, description, technologies, mainImage, link} = req.body
+    const {title, subtitle, description, technologies, mainImage, link, isWork} = req.body
     const files = req.files
 
     let error = bodyErrors(req)
@@ -358,6 +358,7 @@ export const postProject = async(req: CustomRequest, res: Response, next: NextFu
       images: filePathArray,
       mainImage: realMainImage,
       technologies: JSON.parse(technologies),
+      isWork,
       link
     }) as IProject
 
@@ -370,7 +371,7 @@ export const postProject = async(req: CustomRequest, res: Response, next: NextFu
 }
 export const putProject = async(req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const {title, subtitle, description, technologies, mainImage, _id, link} = req.body
+    const {title, subtitle, description, technologies, mainImage, _id, link, isWork} = req.body
     let images = req.body.images?.length ? JSON.parse(req.body.images) : []
 
     let error = bodyErrors(req)
@@ -405,6 +406,7 @@ export const putProject = async(req: CustomRequest, res: Response, next: NextFun
       if (technologies) project.technologies = JSON.parse(technologies)
       if (realMainImage) project.mainImage = realMainImage
       if (link) project.link = link
+      if (isWork) project.isWork = isWork
 
       const savedProject = await project.save()
       return res.status(201).json({result: savedProject})
