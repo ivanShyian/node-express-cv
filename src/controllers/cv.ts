@@ -65,7 +65,7 @@ export const getWorkList = async(req: Request, res: Response, next: NextFunction
   try {
     const work = await Work.find()
     if (work) {
-      return res.status(200).json({work})
+      return res.status(200).json({work: work.reverse()})
     }
     const error: CustomError = new Error('Work is not provided yet')
     error.statusCode = 404
