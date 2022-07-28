@@ -6,7 +6,7 @@ import {
   getConfig,
   getWorkList,
   getProjectById,
-  sendEmail
+  sendEmail, downloadCV
 } from '../controllers/cv'
 import {emailValidation} from '../validators'
 
@@ -16,6 +16,7 @@ const router = Router()
 router.get('/config', getConfig)
 /** About **/
 router.get('/about', getAbout)
+router.get('/cv/download/', downloadCV)
 /** Education **/
 router.get('/education', getEducation)
 /** Projects **/

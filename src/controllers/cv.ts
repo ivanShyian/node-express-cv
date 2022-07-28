@@ -11,6 +11,7 @@ import Project from '../models/project'
 import Config from '../models/config'
 import Education from '../models/education'
 import bodyErrors from '../utils/helpers/validationResultHelper'
+import path from 'path'
 
 const transport = nodemailer.createTransport(nodemailerSendgrid({
   apiKey: process.env.NODE_EMAIL_TRANSPORT_API_KEY!
@@ -128,6 +129,17 @@ export const sendEmail = async(req: Request, res: Response, next: NextFunction) 
       `
     })
     res.status(200).json({result: 'Success'})
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+
+export const downloadCV = async(req: Request, res: Response, next: NextFunction) => {
+  try {
+    const root = path.join(__dirname, '..')
+    const file = `${root}/${req.query.filepath}`
+    res.download(file)
   } catch (e: any) {
     if (!e.statusCode) e.statusCode = 500
     next(e)

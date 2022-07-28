@@ -7,6 +7,10 @@ const nestedSchema = new Schema({
 
 const aboutSchema = new Schema({
   text: nestedSchema,
+  cvPath: {
+    type: String,
+    required: false
+  },
   techs: [{
     name: String,
     value: Number

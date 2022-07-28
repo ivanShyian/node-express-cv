@@ -1,3 +1,5 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import {NextFunction, Response} from 'express'
 import {CustomRequest, CustomError, IEducation, Techs, IConfig, IAbout, IWork, IProject} from '../ts-models'
 import {Express} from 'express'
@@ -10,6 +12,8 @@ import Work from '../models/work'
 import Project from '../models/project'
 import Config from '../models/config'
 import Education from '../models/education'
+
+const isProd = process.env.NODE_ENV === 'production'
 
 /** Config **/
 export const putConfig = async(req: CustomRequest, res: Response, next: NextFunction) => {
@@ -430,6 +434,27 @@ export const deleteProject = async(req: CustomRequest, res: Response, next: Next
     const error: CustomError = new Error('Work wasn\'t found')
     error.statusCode = 404
     throw error
+  } catch (e: any) {
+    if (!e.statusCode) e.statusCode = 500
+    next(e)
+  }
+}
+export const uploadCV = async(req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const files = req.files as Express.Multer.File[]
+    if (files?.length) {
+      const file = files[0]
+      let filePath = file.path.replace('src\\', '').replace('\\', '/')
+      if (isProd) {
+        filePath = filePath.replace(/(dist\\|dist\/)/, '')
+      }
+      const about = await About.findOne() as IAbout
+      about.cvPath = filePath
+      await about.save()
+      return res.status(200).json({result: filePath})
+    }
+    const error: CustomError = new Error('No pdf provided')
+    error.statusCode = 422
   } catch (e: any) {
     if (!e.statusCode) e.statusCode = 500
     next(e)

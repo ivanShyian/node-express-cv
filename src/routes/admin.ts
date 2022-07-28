@@ -13,7 +13,7 @@ import {
   postEducationSchool,
   deleteEducation,
   deleteTech,
-  deleteCourses
+  deleteCourses, uploadCV
 } from '../controllers/admin'
 
 import {
@@ -47,5 +47,6 @@ router.delete('/work/:workId', deleteWork)
 router.post('/project', projectValidation(), postProject)
 router.put('/project', projectValidation(), putProject)
 router.delete('/project/:projectId', deleteProject)
+router.post('/cv/upload', uploadCV)
 
 export default router

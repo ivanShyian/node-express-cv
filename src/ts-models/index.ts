@@ -40,6 +40,7 @@ export interface IConfig extends IBasicMongoose<IConfig> {
 // About
 export interface IAbout extends IBasicMongoose<IAbout> {
   _id: string
+  cvPath: string
   techs: [{
     name: string
     value: number
